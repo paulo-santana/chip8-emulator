@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace Offsets {
 static const std::uint16_t SYSTEM = 0x000;
@@ -18,12 +19,10 @@ public:
 
   static const size_t MEMORY_SIZE = 0x1000;
 
+  static const size_t MAX_ROM_SIZE = Offsets::INTERNAL - Offsets::GAME_SPACE;
+
+  void load_rom(const std::string &rom_file_path);
+
 private:
   std::array<std::uint8_t, MEMORY_SIZE> memory{};
-  std::array<std::uint8_t, 16> registers{};
-
-  std::uint16_t address_register{};
-  std::uint16_t program_counter = Offsets::GAME_SPACE;
-
-  std::array<std::uint8_t, DISPLAY_WIDTH * DISPLAY_HEIGHT> display{};
 };

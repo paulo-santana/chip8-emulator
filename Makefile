@@ -15,7 +15,7 @@ LDLIBS += $(shell pkg-config --libs sdl3)
 all: $(NAME)
 
 run: $(NAME)
-	./$(NAME)
+	./$(NAME) "../roms/games/Pong (1 player).ch8"
 
 rm:
 	rm -rf $(OBJ_DIR)
