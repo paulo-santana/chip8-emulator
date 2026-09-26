@@ -6,10 +6,12 @@ OBJ_DIR ?= ./obj
 SOURCES := main.cpp \
 					 chip8.cpp
 
+DEPS := $(OBJECTS:.o=.d)
+
 OBJECTS := $(addprefix $(OBJ_DIR)/, $(SOURCES:.cpp=.o))
 
 CXXFLAGS += $(shell pkg-config --cflags sdl3)
-CXXFLAGS += -std=c++17 -Wall -Wextra
+CXXFLAGS += -std=c++17 -Wall -Wextra -g
 LDLIBS += $(shell pkg-config --libs sdl3)
 
 all: $(NAME)
@@ -33,3 +35,5 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
+
+-include $(DEPS)

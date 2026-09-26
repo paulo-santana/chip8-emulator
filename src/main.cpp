@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
   check_args(argc, argv);
 
   chip8 emulator;
+  emulator.initialize();
 
   std::cout << "Hello, " << chip8::DISPLAY_WIDTH << "x" << chip8::DISPLAY_HEIGHT
             << " display Emulator!" << std::endl;
@@ -32,6 +33,10 @@ int main(int argc, char **argv) {
   }
 
   emulator.load_rom(rom_file_path);
+
+  std::cin.get(); // Wait for user input before running
+
+  emulator.run();
 
   return 0;
 }
