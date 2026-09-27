@@ -10,6 +10,8 @@ public:
   virtual void load_rom(const std::string &rom_file_path) = 0;
 
   virtual void run() = 0;
+
+  virtual void print_display() const = 0;
 };
 
 std::unique_ptr<Emulator> create_emulator();

@@ -31,6 +31,8 @@ public:
 
   virtual void run() override;
 
+  virtual void print_display() const override;
+
   void set_program_counter(uint16_t new_pc);
 
   uint8_t get_register_value(uint8_t reg);

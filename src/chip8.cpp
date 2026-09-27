@@ -87,17 +87,12 @@ uint16_t Chip8::get_next_opcode() {
   return opcode;
 }
 
-std::ostream &print_word(std::ostream &out, uint16_t value) {
-  out << std::setfill('0') << std::setw(4) << std::hex << value;
-  return out;
-}
-
 void Chip8::run() {
   std::cout << "Starting the emulator..." << std::endl;
   std::cout << "step mode: press a key to continue" << std::endl;
 
-  // while (true) {
-  while (std::cin.get()) {
+  while (true) {
+    // while (std::cin.get()) {
     auto pc = this->get_program_counter();
 
     auto opcode = this->get_next_opcode();
@@ -105,6 +100,7 @@ void Chip8::run() {
                              opcode)
               << std::endl;
     this->execute_opcode(opcode);
+    this->print_display();
   }
 }
 
@@ -188,10 +184,46 @@ uint8_t Chip8::get_register_value(uint8_t reg) {
   return value;
 }
 
-void print_display(uint8_t *display_buffer) {
-  // line = 8 bytes = 64 bits
-  // column = 32
-  // 32 * 64
+void print_sprite(uint8_t *buffer, uint8_t height) {
+  for (uint8_t i = 0; i < height; ++i) {
+    std::cout << std::format("{:8b}", buffer[i]) << std::endl;
+  }
+}
+
+void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
+  auto sprite_addr = this->get_address_i();
+  auto posx = this->get_register_value(x);
+  auto posy = this->get_register_value(y);
+
+  std::cerr << std::format("[debug] drawing sprite in 0x{:04X} at position "
+                           "{}x{} with height {}",
+                           sprite_addr, posx, posy, n)
+            << std::endl;
+
+  // print_sprite(&this->memory.at(sprite_addr), n);
+
+  for (uint8_t i = 0; i < n; ++i) {
+    auto screen_byte = Offsets::DISPLAY_REFRESH + (posy + i) * 8 + posx / 8;
+    auto next_screen_byte = screen_byte + 1;
+    auto sprite_byte = sprite_addr + i;
+
+    // TODO: set VF to 1 if pixels are turned off and to 0 otherwise
+    this->memory.at(screen_byte) ^= this->memory.at(sprite_byte) >> (posx % 8);
+    if (posx % 8 != 0)
+      if (next_screen_byte >= 0x1000) {
+        std::cerr << "Invalid next_screen_byte location: 0x" << std::hex
+                  << next_screen_byte << std::endl;
+        exit(EXIT_FAILURE);
+      }
+    this->memory.at(next_screen_byte) ^= this->memory.at(sprite_byte)
+                                         << (8 - (posx % 8));
+  }
+  // this->print_display();
+}
+
+void Chip8::print_display() const {
+  const uint8_t *display_buffer = &this->memory.at(Offsets::DISPLAY_REFRESH);
+
   for (int y = 0; y < 32; ++y) {
     for (int x = 0; x < 64; ++x) {
       auto column = x / 8;
@@ -207,30 +239,4 @@ void print_display(uint8_t *display_buffer) {
     }
     std::cout << std::endl;
   }
-}
-
-void print_sprite(uint8_t *buffer, uint8_t height) {
-  for (uint8_t i = 0; i < height; ++i) {
-    std::cout << std::format("{:08b}", buffer[i]) << std::endl;
-  }
-}
-
-void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
-  auto sprite_addr = this->get_address_i();
-  auto posx = this->get_register_value(x);
-  auto posy = this->get_register_value(y);
-
-  std::cerr << std::format("[debug] drawing sprite in 0x{:04X} at position "
-                           "{}x{} with height {}",
-                           sprite_addr, posx, posy, n)
-            << std::endl;
-
-  print_sprite(&this->memory.at(sprite_addr), n);
-
-  for (uint8_t i = 0; i < n; ++i) {
-    this->memory.at(Offsets::DISPLAY_REFRESH + (posy + i) * 8 + posx / 8) =
-        this->memory.at(sprite_addr + i);
-  }
-
-  print_display(&this->memory.at(Offsets::DISPLAY_REFRESH));
 }
