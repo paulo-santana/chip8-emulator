@@ -1,5 +1,6 @@
 #pragma once
 
+#include "emulator.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -9,12 +10,12 @@ namespace Offsets {
 static const std::uint16_t SYSTEM = 0x000;
 static const std::uint16_t GAME_SPACE = 0x200;
 static const std::uint16_t INTERNAL = 0xEA0;
-static const std::uint16_t REGISTERS = 0xEA0;
-static const std::uint16_t PC = 0x1;
+static const std::uint16_t PC = INTERNAL;
+static const std::uint16_t REGISTERS = PC + 2;
 static const std::uint16_t DISPLAY_REFRESH = 0xF00;
 } // namespace Offsets
 
-class chip8 {
+class Chip8 : public Emulator {
 public:
   static const size_t DISPLAY_WIDTH = 64;
   static const size_t DISPLAY_HEIGHT = 32;
@@ -23,21 +24,29 @@ public:
 
   static const size_t MAX_ROM_SIZE = Offsets::INTERNAL - Offsets::GAME_SPACE;
 
-  void initialize();
+  virtual void initialize() override;
 
-  void load_rom(const std::string &rom_file_path);
+  virtual void load_rom(const std::string &rom_file_path) override;
 
-  void run();
+  virtual void run() override;
+
+  void set_program_counter(uint16_t new_pc);
+
+  uint8_t get_register_value(uint8_t reg);
+  void set_register_value(uint8_t reg, uint8_t value);
 
 private:
   std::array<std::uint8_t, MEMORY_SIZE> memory{};
 
   std::uint8_t initialized = 0;
 
-  uint16_t get_word_at(std::uint16_t) const;
+  uint16_t get_word_at(std::uint16_t pos) const;
+  void set_word_at(std::uint16_t pos, std::uint16_t word);
 
-  uint16_t get_next_opcode() const;
+  uint16_t get_next_opcode();
   void increase_program_counter();
 
   uint16_t get_program_counter() const;
+
+  void execute_opcode(uint16_t opcode);
 };

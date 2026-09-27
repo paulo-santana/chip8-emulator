@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "chip8.hpp"
+#include "emulator.hpp"
 
 void check_args(int argc, char **argv) {
   if (argc != 2) {
@@ -14,29 +14,24 @@ void check_args(int argc, char **argv) {
   }
 }
 
-int main(int argc, char **argv) {
-  check_args(argc, argv);
-
-  chip8 emulator;
+void run(Emulator &emulator, const std::string &rom_path) {
   emulator.initialize();
 
-  std::cout << "Hello, " << chip8::DISPLAY_WIDTH << "x" << chip8::DISPLAY_HEIGHT
-            << " display Emulator!" << std::endl;
-
-  auto rom_file_path = std::string(argv[1]);
-
-  std::cout << "Memory size: " << chip8::MEMORY_SIZE << " bytes" << std::endl;
-  std::cout << "Arguments: " << argc << std::endl;
-
-  for (int i = 0; i < argc; ++i) {
-    std::cout << "Argument " << i << ": " << argv[i] << std::endl;
-  }
-
-  emulator.load_rom(rom_file_path);
+  emulator.load_rom(rom_path);
 
   std::cin.get(); // Wait for user input before running
 
   emulator.run();
+}
+
+int main(int argc, char **argv) {
+  check_args(argc, argv);
+
+  auto rom_file_path = std::string(argv[1]);
+
+  auto emulator = create_emulator();
+
+  run(*emulator, rom_file_path);
 
   return 0;
 }

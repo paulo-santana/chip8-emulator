@@ -4,7 +4,8 @@ SRC_DIR := ./src
 OBJ_DIR ?= ./obj
 
 SOURCES := main.cpp \
-					 chip8.cpp
+					 chip8.cpp \
+					 opcodes.cpp
 
 DEPS := $(OBJECTS:.o=.d)
 
