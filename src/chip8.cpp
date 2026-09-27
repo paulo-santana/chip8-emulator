@@ -100,7 +100,6 @@ void Chip8::run() {
                              opcode)
               << std::endl;
     this->execute_opcode(opcode);
-    this->print_display();
   }
 }
 
@@ -202,21 +201,35 @@ void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
 
   // print_sprite(&this->memory.at(sprite_addr), n);
 
+  bool turned_off = false;
+
   for (uint8_t i = 0; i < n; ++i) {
     auto screen_byte = Offsets::DISPLAY_REFRESH + (posy + i) * 8 + posx / 8;
     auto next_screen_byte = screen_byte + 1;
     auto sprite_byte = sprite_addr + i;
 
-    // TODO: set VF to 1 if pixels are turned off and to 0 otherwise
-    this->memory.at(screen_byte) ^= this->memory.at(sprite_byte) >> (posx % 8);
-    if (posx % 8 != 0)
-      if (next_screen_byte >= 0x1000) {
-        std::cerr << "Invalid next_screen_byte location: 0x" << std::hex
-                  << next_screen_byte << std::endl;
-        exit(EXIT_FAILURE);
-      }
-    this->memory.at(next_screen_byte) ^= this->memory.at(sprite_byte)
-                                         << (8 - (posx % 8));
+    auto og = this->memory.at(screen_byte);
+    auto mask = this->memory.at(sprite_byte);
+    auto shift = (posx % 8);
+    this->memory.at(screen_byte) = og ^ mask >> shift;
+
+    if (shift != 0 && next_screen_byte >= 0x1000) {
+      std::cerr << "Invalid next_screen_byte location: 0x" << std::hex
+                << next_screen_byte << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    auto nog = this->memory.at(next_screen_byte);
+    this->memory.at(next_screen_byte) = nog ^ mask << (8 - shift);
+
+    if (og & mask >> shift || nog & mask << (8 - shift)) {
+      turned_off = true;
+    }
+  }
+
+  if (turned_off) {
+    this->set_register_value(0xF, 1);
+  } else {
+    this->set_register_value(0xF, 0);
   }
   // this->print_display();
 }
