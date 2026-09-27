@@ -12,6 +12,7 @@ static const std::uint16_t GAME_SPACE = 0x200;
 static const std::uint16_t INTERNAL = 0xEA0;
 static const std::uint16_t PC = INTERNAL;
 static const std::uint16_t REGISTERS = PC + 2;
+static const std::uint16_t I = REGISTERS + 16;
 static const std::uint16_t DISPLAY_REFRESH = 0xF00;
 } // namespace Offsets
 
@@ -34,6 +35,11 @@ public:
 
   uint8_t get_register_value(uint8_t reg);
   void set_register_value(uint8_t reg, uint8_t value);
+
+  void set_address_i(uint16_t addr);
+  uint16_t get_address_i();
+
+  void draw(uint8_t x, uint8_t y, uint8_t n);
 
 private:
   std::array<std::uint8_t, MEMORY_SIZE> memory{};

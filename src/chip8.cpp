@@ -1,7 +1,9 @@
 #include "chip8.hpp"
 #include <cstdint>
 #include <cstdlib>
+#include <format>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -14,6 +16,7 @@ std::unique_ptr<Emulator> create_emulator() {
 }
 
 void Chip8::initialize() {
+  this->memory.fill(0); // Clear memory before loading ROM
   this->memory.at(Offsets::PC) = Offsets::GAME_SPACE >> 8;
   this->memory.at(Offsets::PC + 1) = Offsets::GAME_SPACE & 0xFF;
   this->initialized = 1;
@@ -46,7 +49,6 @@ void Chip8::load_rom(const std::string &rom_file_path) {
   std::cout << "ROM file size: " << size << " bytes" << std::endl;
 
   file.seekg(0, std::ios::beg);
-  // this->memory.fill(0); // Clear memory before loading ROM
   file.read(reinterpret_cast<char *>(this->memory.data() + Offsets::GAME_SPACE),
             size);
 
@@ -80,16 +82,30 @@ void Chip8::increase_program_counter() {
 uint16_t Chip8::get_next_opcode() {
   auto pc = this->get_program_counter();
   auto opcode = this->get_word_at(pc);
-  this->increase_program_counter();
+  this->set_program_counter(pc + 2);
+  // this->increase_program_counter();
   return opcode;
+}
+
+std::ostream &print_word(std::ostream &out, uint16_t value) {
+  out << std::setfill('0') << std::setw(4) << std::hex << value;
+  return out;
 }
 
 void Chip8::run() {
   std::cout << "Starting the emulator..." << std::endl;
-  std::cout << "Emulator is running." << std::endl;
+  std::cout << "step mode: press a key to continue" << std::endl;
 
-  auto opcode = this->get_next_opcode();
-  this->execute_opcode(opcode);
+  // while (true) {
+  while (std::cin.get()) {
+    auto pc = this->get_program_counter();
+
+    auto opcode = this->get_next_opcode();
+    std::cerr << std::format("[debug] PC: 0x{:04x} - got opcode 0x{:04X}", pc,
+                             opcode)
+              << std::endl;
+    this->execute_opcode(opcode);
+  }
 }
 
 uint16_t Chip8::get_program_counter() const { return get_word_at(Offsets::PC); }
@@ -98,13 +114,19 @@ void Chip8::execute_opcode(uint16_t opcode) {
   switch (opcode & 0xF000) {
 
   case 0x0000:
-    switch (opcode & 0x000F) {
-    case 0x0000:
+    switch (opcode & 0x00FF) {
+    case 0x00E0:
       opcode_00E0(*this, opcode);
       break;
-    case 0x000E:
+    case 0x00EE:
       opcode_00EE(*this, opcode);
       break;
+    default:
+      std::cerr << std::format("[warn]: calling opcode_0NNN for: 0x{:04X}",
+                               opcode)
+                << std::endl;
+      opcode_0NNN(*this, opcode);
+      // exit(EXIT_FAILURE);
     }
     break;
 
@@ -117,27 +139,98 @@ void Chip8::execute_opcode(uint16_t opcode) {
   case 0x7000:
     opcode_7XNN(*this, opcode);
     break;
+  case 0xA000:
+    opcode_ANNN(*this, opcode);
+    break;
+  case 0xD000:
+    opcode_DXYN(*this, opcode);
+    break;
   default:
-    std::cerr << "Error: Unrecognized opcode: 0x" << std::hex << opcode
-              << std::dec << std::endl;
+    std::cerr << std::format("Error: Unrecognized opcode: 0x{:04X}", opcode)
+              << std::endl;
     exit(EXIT_FAILURE);
   }
 }
 
 void Chip8::set_program_counter(uint16_t new_pc) {
-  std::cerr << "[debug] setting program counter to 0x" << std::hex << new_pc
-            << std::endl;
+  // std::cerr << std::format("[debug] setting program counter to 0x{:04X}",
+  //                          new_pc)
+  //           << std::endl;
   this->set_word_at(Offsets::PC, new_pc);
 }
 
+void Chip8::set_address_i(uint16_t addr) {
+  std::cerr << std::format("[debug] setting I to 0x{:04X}", addr) << std::endl;
+  this->memory.at(Offsets::I) = addr >> 8; // & 0xF;
+  this->memory.at(Offsets::I + 1) = addr & 0xFF;
+}
+
+uint16_t Chip8::get_address_i() {
+  uint16_t addr = ((uint16_t)this->memory.at(Offsets::I) << 8) | // & 0xF;
+                  ((uint16_t)this->memory.at(Offsets::I + 1));
+  std::cout << std::format("[debug] returning address inside I 0x{:04X}", addr)
+            << std::endl;
+  return addr;
+}
 void Chip8::set_register_value(uint8_t reg, uint8_t value) {
-  std::cerr << "[debug] setting register 0x0" << std::hex << (int)reg
-            << " to 0x" << std::hex << (int)value << std::endl;
+  std::cerr << std::format("[debug] setting register 0x{:02X} to 0x{:02X}", reg,
+                           value)
+            << std::endl;
+
   this->memory.at(Offsets::REGISTERS + reg) = value;
 }
 
 uint8_t Chip8::get_register_value(uint8_t reg) {
-  std::cerr << "[debug] getting register 0x0" << (int)reg << " value"
+  auto value = this->memory.at(Offsets::REGISTERS + reg);
+  std::cerr << std::format("[debug] getting register 0x{:02X} value 0x{:02X}",
+                           reg, value)
             << std::endl;
-  return this->memory.at(Offsets::REGISTERS + reg);
+  return value;
+}
+
+void print_display(uint8_t *display_buffer) {
+  // line = 8 bytes = 64 bits
+  // column = 32
+  // 32 * 64
+  for (int y = 0; y < 32; ++y) {
+    for (int x = 0; x < 64; ++x) {
+      auto column = x / 8;
+      auto line = y;
+      auto byte = line * 8 + column;
+      auto value = display_buffer[byte];
+      auto bit = 7 - (x % 8);
+      auto on = value & (1 << bit);
+      if (on > 0)
+        std::cout << "X";
+      else
+        std::cout << " ";
+    }
+    std::cout << std::endl;
+  }
+}
+
+void print_sprite(uint8_t *buffer, uint8_t height) {
+  for (uint8_t i = 0; i < height; ++i) {
+    std::cout << std::format("{:08b}", buffer[i]) << std::endl;
+  }
+}
+
+void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
+  auto sprite_addr = this->get_address_i();
+  auto posx = this->get_register_value(x);
+  auto posy = this->get_register_value(y);
+
+  std::cerr << std::format("[debug] drawing sprite in 0x{:04X} at position "
+                           "{}x{} with height {}",
+                           sprite_addr, posx, posy, n)
+            << std::endl;
+
+  print_sprite(&this->memory.at(sprite_addr), n);
+
+  for (uint8_t i = 0; i < n; ++i) {
+    this->memory.at(Offsets::DISPLAY_REFRESH + (posy + i) * 8 + posx / 8) =
+        this->memory.at(sprite_addr + i);
+  }
+
+  print_display(&this->memory.at(Offsets::DISPLAY_REFRESH));
 }
