@@ -1,6 +1,7 @@
 #pragma once
 
 #include "emulator.hpp"
+#include "window.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -13,7 +14,7 @@ static const std::uint16_t INTERNAL = 0xEA0;
 static const std::uint16_t PC = INTERNAL;
 static const std::uint16_t REGISTERS = PC + 2;
 static const std::uint16_t I = REGISTERS + 16;
-static const std::uint16_t DISPLAY_REFRESH = 0xF00;
+static const std::uint16_t DISPLAY_BUFFER = 0xF00;
 } // namespace Offsets
 
 class Chip8 : public Emulator {
@@ -44,6 +45,11 @@ public:
   void draw(uint8_t x, uint8_t y, uint8_t n);
 
 private:
+  Window window;
+
+  void render();
+  bool program_finished = false;
+
   std::array<std::uint8_t, MEMORY_SIZE> memory{};
 
   std::uint8_t initialized = 0;

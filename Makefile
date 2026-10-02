@@ -5,14 +5,15 @@ OBJ_DIR ?= ./obj
 
 SOURCES := main.cpp \
 					 chip8.cpp \
+					 window.cpp \
 					 opcodes.cpp
-
-DEPS := $(OBJECTS:.o=.d)
 
 OBJECTS := $(addprefix $(OBJ_DIR)/, $(SOURCES:.cpp=.o))
 
+DEPS := $(OBJECTS:.o=.d)
+
 CXXFLAGS += $(shell pkg-config --cflags sdl3)
-CXXFLAGS += -std=c++20 -Wall -Wextra -g
+CXXFLAGS += -std=c++20 -Wall -Wextra -g -MMD -MP
 LDLIBS += $(shell pkg-config --libs sdl3)
 
 all: $(NAME)

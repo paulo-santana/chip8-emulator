@@ -3,13 +3,13 @@
 #include <cstdlib>
 #include <format>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <ostream>
 #include <sys/types.h>
 
 #include "opcodes.hpp"
+#include "window.hpp"
 
 std::unique_ptr<Emulator> create_emulator() {
   return std::make_unique<Chip8>();
@@ -91,15 +91,38 @@ void Chip8::run() {
   std::cout << "Starting the emulator..." << std::endl;
   std::cout << "step mode: press a key to continue" << std::endl;
 
-  while (true) {
-    // while (std::cin.get()) {
+  while (this->program_finished == false) {
     auto pc = this->get_program_counter();
 
     auto opcode = this->get_next_opcode();
-    std::cerr << std::format("[debug] PC: 0x{:04x} - got opcode 0x{:04X}", pc,
-                             opcode)
-              << std::endl;
     this->execute_opcode(opcode);
+    this->render();
+  }
+}
+
+void Chip8::render() {
+  const int32_t size = Window::FRAMEBUFFER_WIDTH * Window::FRAMEBUFFER_HEIGHT;
+  std::array<uint32_t, size> buffer;
+
+  auto dp_size = Chip8::MEMORY_SIZE - Offsets::DISPLAY_BUFFER; // 0x100
+
+  for (int i = 0; i < size; i++) {
+    auto line = i / Window::FRAMEBUFFER_WIDTH;
+    auto column = i % Window::FRAMEBUFFER_WIDTH;
+    auto dp_line = (line * Chip8::DISPLAY_HEIGHT) / Window::FRAMEBUFFER_HEIGHT;
+    auto dp_column =
+        (column * Chip8::DISPLAY_WIDTH) / Window::FRAMEBUFFER_WIDTH;
+    auto pixel = dp_line * Chip8::DISPLAY_WIDTH + dp_column;
+    auto byte = this->memory.at(Offsets::DISPLAY_BUFFER + pixel / 8);
+    auto bit = (int)pixel % 8;
+    auto bit_on = (byte >> (7 - bit)) & 1;
+    buffer.at(i) = bit_on ? 0xFFFFFFFF : 0xFF000000;
+  }
+
+  this->window.render(buffer.data());
+
+  if (!this->window.update()) {
+    this->program_finished = true;
   }
 }
 
@@ -204,7 +227,7 @@ void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
   bool turned_off = false;
 
   for (uint8_t i = 0; i < n; ++i) {
-    auto screen_byte = Offsets::DISPLAY_REFRESH + (posy + i) * 8 + posx / 8;
+    auto screen_byte = Offsets::DISPLAY_BUFFER + (posy + i) * 8 + posx / 8;
     auto next_screen_byte = screen_byte + 1;
     auto sprite_byte = sprite_addr + i;
 
@@ -235,7 +258,7 @@ void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
 }
 
 void Chip8::print_display() const {
-  const uint8_t *display_buffer = &this->memory.at(Offsets::DISPLAY_REFRESH);
+  const uint8_t *display_buffer = &this->memory.at(Offsets::DISPLAY_BUFFER);
 
   for (int y = 0; y < 32; ++y) {
     for (int x = 0; x < 64; ++x) {

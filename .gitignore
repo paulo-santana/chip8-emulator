@@ -2,3 +2,4 @@ ch8
 *.o
 obj/
 /.vscode
+/vgcore.*

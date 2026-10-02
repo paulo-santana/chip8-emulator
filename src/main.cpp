@@ -19,8 +19,6 @@ void run(Emulator &emulator, const std::string &rom_path) {
 
   emulator.load_rom(rom_path);
 
-  std::cin.get(); // Wait for user input before running
-
   emulator.run();
 }
 
