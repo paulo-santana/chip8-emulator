@@ -214,8 +214,8 @@ void print_sprite(uint8_t *buffer, uint8_t height) {
 
 void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
   auto sprite_addr = this->get_address_i();
-  auto posx = this->get_register_value(x);
-  auto posy = this->get_register_value(y);
+  auto posx = this->get_register_value(x) % 64;
+  auto posy = this->get_register_value(y) % 32;
 
   std::cerr << std::format("[debug] drawing sprite in 0x{:04X} at position "
                            "{}x{} with height {}",
