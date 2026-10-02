@@ -14,7 +14,10 @@ static const std::uint16_t INTERNAL = 0xEA0;
 static const std::uint16_t PC = INTERNAL;
 static const std::uint16_t REGISTERS = PC + 2;
 static const std::uint16_t I = REGISTERS + 16;
+static const std::uint16_t STACK_COUNTER = I + 2;
+static const std::uint16_t STACK = STACK_COUNTER + 1;
 static const std::uint16_t DISPLAY_BUFFER = 0xF00;
+static const std::uint16_t STACK_SIZE = DISPLAY_BUFFER - STACK;
 } // namespace Offsets
 
 class Chip8 : public Emulator {
@@ -42,6 +45,12 @@ public:
   void set_address_i(uint16_t addr);
   uint16_t get_address_i();
 
+  void set_skip();
+
+  void set_bcd(uint8_t value);
+
+  void push_stack();
+
   void draw(uint8_t x, uint8_t y, uint8_t n);
 
 private:
@@ -53,6 +62,8 @@ private:
   std::array<std::uint8_t, MEMORY_SIZE> memory{};
 
   std::uint8_t initialized = 0;
+
+  bool skip = false;
 
   uint16_t get_word_at(std::uint16_t pos) const;
   void set_word_at(std::uint16_t pos, std::uint16_t word);

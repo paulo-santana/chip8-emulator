@@ -61,7 +61,7 @@ void Window::render(uint32_t *buffer) {
 bool Window::update() {
 
   SDL_Event e;
-  if (SDL_PollEvent(&e)) {
+  while (SDL_PollEvent(&e)) {
     if (e.type == SDL_EVENT_QUIT) {
       return false;
     }

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
+#include <stack>
 #include <sys/types.h>
 
 #include "opcodes.hpp"
@@ -92,19 +93,22 @@ void Chip8::run() {
   std::cout << "step mode: press a key to continue" << std::endl;
 
   while (this->program_finished == false) {
-    auto pc = this->get_program_counter();
-
     auto opcode = this->get_next_opcode();
-    this->execute_opcode(opcode);
+    if (this->skip) {
+      std::cerr << std::format("[debug] skipping opcode 0x{:04X}", opcode)
+                << std::endl;
+      this->skip = false;
+    } else {
+      this->execute_opcode(opcode);
+    }
     this->render();
+    // std::cin.get();
   }
 }
 
 void Chip8::render() {
   const int32_t size = Window::FRAMEBUFFER_WIDTH * Window::FRAMEBUFFER_HEIGHT;
   std::array<uint32_t, size> buffer;
-
-  auto dp_size = Chip8::MEMORY_SIZE - Offsets::DISPLAY_BUFFER; // 0x100
 
   for (int i = 0; i < size; i++) {
     auto line = i / Window::FRAMEBUFFER_WIDTH;
@@ -151,6 +155,12 @@ void Chip8::execute_opcode(uint16_t opcode) {
   case 0x1000:
     opcode_1NNN(*this, opcode);
     break;
+  case 0x2000:
+    opcode_2NNN(*this, opcode);
+    break;
+  case 0x3000:
+    opcode_3XNN(*this, opcode);
+    break;
   case 0x6000:
     opcode_6XNN(*this, opcode);
     break;
@@ -190,6 +200,24 @@ uint16_t Chip8::get_address_i() {
             << std::endl;
   return addr;
 }
+
+void Chip8::set_skip() {
+  std::cerr << "[debug] enabling skip..." << std::endl;
+  this->skip = true;
+}
+
+/**
+set_BCD(Vx)
+*(I+0) = BCD(3);
+*(I+1) = BCD(2);
+*(I+2) = BCD(1);
+ */
+
+// void Chip8::set_bcd(uint8_t value) {
+//   uint16_t addr = this->get_address_i();
+//   this->;
+// }
+
 void Chip8::set_register_value(uint8_t reg, uint8_t value) {
   std::cerr << std::format("[debug] setting register 0x{:02X} to 0x{:02X}", reg,
                            value)
@@ -204,6 +232,17 @@ uint8_t Chip8::get_register_value(uint8_t reg) {
                            reg, value)
             << std::endl;
   return value;
+}
+
+void Chip8::push_stack() {
+  uint8_t &stack_counter = this->memory.at(Offsets::STACK_COUNTER);
+  std::cerr << std::format("[debug] setting stack #{} to 0x{:04X}",
+                           stack_counter, this->get_program_counter())
+            << std::endl;
+
+  this->set_word_at(Offsets::STACK + stack_counter,
+                    this->get_program_counter());
+  stack_counter += 2;
 }
 
 void print_sprite(uint8_t *buffer, uint8_t height) {
@@ -236,16 +275,21 @@ void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
     auto shift = (posx % 8);
     this->memory.at(screen_byte) = og ^ mask >> shift;
 
-    if (shift != 0 && next_screen_byte >= 0x1000) {
-      std::cerr << "Invalid next_screen_byte location: 0x" << std::hex
-                << next_screen_byte << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    auto nog = this->memory.at(next_screen_byte);
-    this->memory.at(next_screen_byte) = nog ^ mask << (8 - shift);
-
-    if (og & mask >> shift || nog & mask << (8 - shift)) {
+    if (og & mask >> shift) {
       turned_off = true;
+    }
+
+    if (shift != 0) {
+      if (next_screen_byte >= 0x1000) {
+        std::cerr << "Invalid next_screen_byte location: 0x" << std::hex
+                  << next_screen_byte << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      auto nog = this->memory.at(next_screen_byte);
+      this->memory.at(next_screen_byte) = nog ^ mask << (8 - shift);
+      if (nog & mask << (8 - shift)) {
+        turned_off = true;
+      }
     }
   }
 

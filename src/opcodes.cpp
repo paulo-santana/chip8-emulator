@@ -24,6 +24,22 @@ void opcode_1NNN(Chip8 &chip8, uint16_t opcode) {
   chip8.set_program_counter(opcode & 0x0FFF);
 }
 
+void opcode_2NNN(Chip8 &chip8, uint16_t opcode) {
+  chip8.push_stack();
+  chip8.set_program_counter(opcode & 0x0FFF);
+}
+
+void opcode_3XNN(Chip8 &chip8, uint16_t opcode) {
+  uint8_t reg = (opcode & 0x0F00) >> 8;
+  uint8_t value = opcode & 0xFF;
+
+  std::cerr << "[opcode] running opcode_3XNN" << std::endl;
+
+  if (chip8.get_register_value(reg) == value) {
+    chip8.set_skip();
+  }
+}
+
 void opcode_6XNN(Chip8 &chip8, uint16_t opcode) {
   auto reg = (opcode & 0x0F00) >> 8;
   auto value = opcode & 0xFF;
@@ -49,3 +65,9 @@ void opcode_DXYN(Chip8 &chip8, uint16_t opcode) {
 
   chip8.draw(x, y, n);
 }
+
+// void opcode_FX33(Chip8 &chip8, uint16_t opcode) {
+//   uint8_t reg = opcode & 0x0F00 >> 8;
+//   uint8_t value = chip8.get_register_value(reg);
+//   chip8.set_bcd(value);
+// }

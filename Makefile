@@ -27,6 +27,18 @@ test1: $(NAME)
 test2: $(NAME)
 	./$(NAME) "../roms/test-suite/2-ibm-logo.ch8"
 
+picture: $(NAME)
+	./$(NAME) "../roms/programs/Chip8 Picture.ch8"
+
+mirror: $(NAME)
+	./$(NAME) "../roms/games/X-Mirror.ch8"
+
+fishie: $(NAME)
+	./$(NAME) "../roms/programs/Fishie [Hap, 2005].ch8"
+
+random: $(NAME)
+	./$(NAME) "../roms/programs/Random Number Test [Matthew Mikolay, 2010].ch8"
+
 rm:
 	rm -rf $(OBJ_DIR)
 
