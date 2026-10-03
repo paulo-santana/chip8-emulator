@@ -71,7 +71,7 @@ void opcode_EXA1(Chip8 &chip8, uint16_t opcode) {
 
   auto key = chip8.get_register_value(reg) & 0x0F;
 
-  if (chip8.is_key_pressed(key)) {
+  if (!chip8.is_key_pressed(key)) {
     chip8.set_skip();
   }
 }
