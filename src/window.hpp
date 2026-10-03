@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdint>
 #include <map>
+#include <vector>
 
 class Window {
 public:
@@ -33,13 +34,23 @@ private:
   const bool *keyboardState;
   int keyboardKeys;
 
-  std::map<Chip8Key, SDL_Scancode> keymap{
-      {KEY_0, SDL_SCANCODE_0}, {KEY_1, SDL_SCANCODE_1}, {KEY_2, SDL_SCANCODE_2},
-      {KEY_3, SDL_SCANCODE_3}, {KEY_4, SDL_SCANCODE_4}, {KEY_5, SDL_SCANCODE_5},
-      {KEY_6, SDL_SCANCODE_6}, {KEY_7, SDL_SCANCODE_7}, {KEY_8, SDL_SCANCODE_8},
-      {KEY_9, SDL_SCANCODE_9}, {KEY_A, SDL_SCANCODE_A}, {KEY_B, SDL_SCANCODE_B},
-      {KEY_C, SDL_SCANCODE_C}, {KEY_D, SDL_SCANCODE_D}, {KEY_E, SDL_SCANCODE_E},
-      {KEY_F, SDL_SCANCODE_F},
+  std::map<Chip8Key, std::vector<SDL_Scancode>> keymap{
+      {KEY_0, {SDL_SCANCODE_0}},
+      {KEY_1, {SDL_SCANCODE_1}},
+      {KEY_2, {SDL_SCANCODE_2, SDL_SCANCODE_DOWN, SDL_SCANCODE_K}},
+      {KEY_3, {SDL_SCANCODE_3}},
+      {KEY_4, {SDL_SCANCODE_4, SDL_SCANCODE_LEFT, SDL_SCANCODE_J}},
+      {KEY_5, {SDL_SCANCODE_5}},
+      {KEY_6, {SDL_SCANCODE_6, SDL_SCANCODE_RIGHT, SDL_SCANCODE_L}},
+      {KEY_7, {SDL_SCANCODE_7}},
+      {KEY_8, {SDL_SCANCODE_8, SDL_SCANCODE_UP, SDL_SCANCODE_I}},
+      {KEY_9, {SDL_SCANCODE_9}},
+      {KEY_A, {SDL_SCANCODE_A}},
+      {KEY_B, {SDL_SCANCODE_B}},
+      {KEY_C, {SDL_SCANCODE_C}},
+      {KEY_D, {SDL_SCANCODE_D}},
+      {KEY_E, {SDL_SCANCODE_E}},
+      {KEY_F, {SDL_SCANCODE_F}},
   };
 
   std::array<int, FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT> frameBuffer;

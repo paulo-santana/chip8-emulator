@@ -10,6 +10,7 @@
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <exception>
@@ -102,8 +103,11 @@ bool Window::update() {
 bool Window::is_key_pressed(Chip8Key key) const {
   try {
 
-    auto scancode = this->keymap.at(key);
-    return this->keyboardState[scancode];
+    auto scancodes = this->keymap.at(key);
+    return std::any_of(scancodes.begin(), scancodes.end(),
+                       [this](SDL_Scancode scancode) {
+                         return this->keyboardState[scancode];
+                       });
   } catch (std::exception &e) {
     std::cerr << std::format("Failed verifying key {} press: ", (int)key)
               << e.what() << std::endl;
