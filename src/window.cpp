@@ -3,13 +3,17 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <cstdint>
 #include <cstring>
+#include <exception>
+#include <format>
 #include <iostream>
 
 Window::Window() {
@@ -40,6 +44,9 @@ Window::Window() {
   }
 
   this->frameBuffer.fill(0);
+
+  this->keyboardState = SDL_GetKeyboardState(&this->keyboardKeys);
+
   std::cerr << "window initialized" << std::endl;
 }
 
@@ -90,4 +97,17 @@ bool Window::update() {
   SDL_Delay(1);
 
   return true;
+}
+
+bool Window::is_key_pressed(Chip8Key key) const {
+  try {
+
+    auto scancode = this->keymap.at(key);
+    return this->keyboardState[scancode];
+  } catch (std::exception &e) {
+    std::cerr << std::format("Failed verifying key {} press: ", (int)key)
+              << e.what() << std::endl;
+  }
+
+  return false;
 }

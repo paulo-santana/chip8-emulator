@@ -1,11 +1,13 @@
 #pragma once
 
-#include "emulator.hpp"
-#include "window.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
+
+#include "chip8key.hpp"
+#include "emulator.hpp"
+#include "window.hpp"
 
 namespace Offsets {
 static const std::uint16_t SYSTEM = 0x000;
@@ -50,8 +52,11 @@ public:
   void set_bcd(uint8_t value);
 
   void push_stack();
+  void pop_stack();
 
   void draw(uint8_t x, uint8_t y, uint8_t n);
+
+  bool is_key_pressed(int key) const;
 
 private:
   Window window;

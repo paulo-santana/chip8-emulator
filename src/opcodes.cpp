@@ -11,7 +11,7 @@ void opcode_00E0(Chip8 &chip8, uint16_t opcode) {
 void opcode_00EE(Chip8 &chip8, uint16_t opcode) {
   (void)chip8;
   (void)opcode;
-  std::cerr << "[opcode] return not implemented yet" << std::endl;
+  chip8.pop_stack();
 }
 
 void opcode_0NNN(Chip8 &chip8, uint16_t opcode) {
@@ -64,6 +64,16 @@ void opcode_DXYN(Chip8 &chip8, uint16_t opcode) {
   auto n = (opcode & 0xF);
 
   chip8.draw(x, y, n);
+}
+
+void opcode_EXA1(Chip8 &chip8, uint16_t opcode) {
+  auto reg = (opcode & 0x0F00) >> 8;
+
+  auto key = chip8.get_register_value(reg) & 0x0F;
+
+  if (chip8.is_key_pressed(key)) {
+    chip8.set_skip();
+  }
 }
 
 // void opcode_FX33(Chip8 &chip8, uint16_t opcode) {

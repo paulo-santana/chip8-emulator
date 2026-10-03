@@ -6,7 +6,6 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
-#include <stack>
 #include <sys/types.h>
 
 #include "opcodes.hpp"
@@ -173,6 +172,13 @@ void Chip8::execute_opcode(uint16_t opcode) {
   case 0xD000:
     opcode_DXYN(*this, opcode);
     break;
+  case 0xE000:
+    switch (opcode & 0x00FF) {
+    case 0x00A1:
+      opcode_EXA1(*this, opcode);
+      break;
+    }
+    break;
   default:
     std::cerr << std::format("Error: Unrecognized opcode: 0x{:04X}", opcode)
               << std::endl;
@@ -234,15 +240,36 @@ uint8_t Chip8::get_register_value(uint8_t reg) {
   return value;
 }
 
+void Chip8::pop_stack() {
+  uint8_t &stack_counter = this->memory.at(Offsets::STACK_COUNTER);
+
+  this->get_word_at(Offsets::STACK + stack_counter);
+
+  stack_counter -= 1;
+  auto old_pc = this->get_word_at(Offsets::STACK + stack_counter * 2);
+  std::cerr << std::format("[debug] retrieved 0x{:04X} back from stack #{}",
+                           old_pc, stack_counter)
+            << std::endl;
+  this->set_program_counter(old_pc);
+}
+
 void Chip8::push_stack() {
   uint8_t &stack_counter = this->memory.at(Offsets::STACK_COUNTER);
   std::cerr << std::format("[debug] setting stack #{} to 0x{:04X}",
                            stack_counter, this->get_program_counter())
             << std::endl;
 
-  this->set_word_at(Offsets::STACK + stack_counter,
+  if (stack_counter >= 12) {
+    std::cerr << std::format("[error] ---- stack overflow ----\ntried to write "
+                             "0x{:04X} to stack_counter #{}",
+                             this->get_program_counter(), stack_counter)
+              << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  this->set_word_at(Offsets::STACK + stack_counter * 2,
                     this->get_program_counter());
-  stack_counter += 2;
+  stack_counter += 1;
 }
 
 void print_sprite(uint8_t *buffer, uint8_t height) {
@@ -298,7 +325,10 @@ void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
   } else {
     this->set_register_value(0xF, 0);
   }
-  // this->print_display();
+}
+
+bool Chip8::is_key_pressed(int key) const {
+  return this->window.is_key_pressed(static_cast<Chip8Key>(key));
 }
 
 void Chip8::print_display() const {
