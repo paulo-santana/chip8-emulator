@@ -10,6 +10,7 @@ void opcode_0NNN(Chip8 &chip8, uint16_t opcode);
 void opcode_1NNN(Chip8 &chip8, uint16_t opcode);
 void opcode_2NNN(Chip8 &chip8, uint16_t opcode);
 void opcode_3XNN(Chip8 &chip8, uint16_t opcode);
+void opcode_4XNN(Chip8 &chip8, uint16_t opcode);
 void opcode_6XNN(Chip8 &chip8, uint16_t opcode);
 void opcode_7XNN(Chip8 &chip8, uint16_t opcode);
 

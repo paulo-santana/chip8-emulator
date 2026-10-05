@@ -40,6 +40,17 @@ void opcode_3XNN(Chip8 &chip8, uint16_t opcode) {
   }
 }
 
+void opcode_4XNN(Chip8 &chip8, uint16_t opcode) {
+  uint8_t reg = (opcode & 0x0F00) >> 8;
+  uint8_t value = opcode & 0xFF;
+
+  std::cerr << "[opcode] running opcode_4XNN" << std::endl;
+
+  if (chip8.get_register_value(reg) != value) {
+    chip8.set_skip();
+  }
+}
+
 void opcode_6XNN(Chip8 &chip8, uint16_t opcode) {
   auto reg = (opcode & 0x0F00) >> 8;
   auto value = opcode & 0xFF;
