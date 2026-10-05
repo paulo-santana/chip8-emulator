@@ -97,8 +97,8 @@ void Chip8::run() {
                 << std::endl;
       this->skip = false;
     } else {
-      std::cerr << std::format("[debug] executing opcode 0x{:04X}", opcode)
-                << std::endl;
+      // std::cerr << std::format("[debug] executing opcode 0x{:04X}", opcode)
+      //           << std::endl;
       this->execute_opcode(opcode);
     }
     this->render();
@@ -213,6 +213,12 @@ void Chip8::execute_opcode(uint16_t opcode) {
     case 0x00A1:
       opcode_EXA1(*this, opcode);
       break;
+    }
+    break;
+  case 0xF000:
+    switch (opcode & 0x00FF) {
+    case 0x001E:
+      opcode_FX1E(*this, opcode);
     }
     break;
   default:

@@ -17,3 +17,5 @@ void opcode_7XNN(Chip8 &chip8, uint16_t opcode);
 void opcode_ANNN(Chip8 &chip8, uint16_t opcode);
 void opcode_DXYN(Chip8 &chip8, uint16_t opcode);
 void opcode_EXA1(Chip8 &chip8, uint16_t opcode);
+
+void opcode_FX1E(Chip8 &chip8, uint16_t opcode);

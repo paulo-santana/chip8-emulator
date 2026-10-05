@@ -87,6 +87,15 @@ void opcode_EXA1(Chip8 &chip8, uint16_t opcode) {
   }
 }
 
+void opcode_FX1E(Chip8 &chip8, uint16_t opcode) {
+  auto reg = (opcode & 0x0F00) >> 8;
+
+  auto value = chip8.get_register_value(reg) & 0x0F;
+
+  auto addr = chip8.get_address_i();
+  chip8.set_address_i(addr + value);
+}
+
 // void opcode_FX33(Chip8 &chip8, uint16_t opcode) {
 //   uint8_t reg = opcode & 0x0F00 >> 8;
 //   uint8_t value = chip8.get_register_value(reg);
