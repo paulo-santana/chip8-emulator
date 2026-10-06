@@ -238,15 +238,14 @@ void Chip8::set_program_counter(uint16_t new_pc) {
 }
 
 void Chip8::set_address_i(uint16_t addr) {
-  std::cerr << std::format("[debug] setting I to 0x{:04X}", addr) << std::endl;
-  this->memory.at(Offsets::I) = addr >> 8; // & 0xF;
-  this->memory.at(Offsets::I + 1) = addr & 0xFF;
+  std::cerr << std::format("[debug] setting I to 0x{:04X}", addr & 0x0FFF)
+            << std::endl;
+  this->set_word_at(Offsets::I, addr & 0x0FFF);
 }
 
 uint16_t Chip8::get_address_i() {
-  uint16_t addr = ((uint16_t)this->memory.at(Offsets::I) << 8) | // & 0xF;
-                  ((uint16_t)this->memory.at(Offsets::I + 1));
-  std::cout << std::format("[debug] returning address inside I 0x{:04X}", addr)
+  uint16_t addr = this->get_word_at(Offsets::I);
+  std::cerr << std::format("[debug] returning address inside I 0x{:04X}", addr)
             << std::endl;
   return addr;
 }
