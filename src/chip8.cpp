@@ -8,6 +8,7 @@
 #include <ostream>
 #include <sys/types.h>
 
+#include "font.hpp"
 #include "opcodes.hpp"
 #include "window.hpp"
 
@@ -17,6 +18,7 @@ std::unique_ptr<Emulator> create_emulator() {
 
 void Chip8::initialize() {
   this->memory.fill(0); // Clear memory before loading ROM
+  load_font(this->memory.data() + Offsets::FONT);
   this->memory.at(Offsets::PC) = Offsets::GAME_SPACE >> 8;
   this->memory.at(Offsets::PC + 1) = Offsets::GAME_SPACE & 0xFF;
   this->initialized = 1;
