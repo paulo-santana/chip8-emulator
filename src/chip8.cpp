@@ -320,6 +320,11 @@ void print_sprite(uint8_t *buffer, uint8_t height) {
   }
 }
 
+void Chip8::clear_display() {
+  memset(this->memory.data() + Offsets::DISPLAY_BUFFER, 0,
+         Chip8::MEMORY_SIZE - Offsets::DISPLAY_BUFFER);
+}
+
 void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
   auto sprite_addr = this->get_address_i();
   auto posx = this->get_register_value(x) % 64;

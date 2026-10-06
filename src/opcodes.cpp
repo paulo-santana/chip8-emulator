@@ -3,8 +3,8 @@
 #include <iostream>
 
 void opcode_00E0(Chip8 &chip8, uint16_t opcode) {
-  (void)chip8;
   (void)opcode;
+  chip8.clear_display();
   std::cerr << "[opcode] display cleared" << std::endl;
 }
 

@@ -54,6 +54,7 @@ public:
   void push_stack();
   void pop_stack();
 
+  void clear_display();
   void draw(uint8_t x, uint8_t y, uint8_t n);
 
   bool is_key_pressed(int key) const;
