@@ -3,3 +3,4 @@ ch8
 obj/
 /.vscode
 /vgcore.*
+/log.txt

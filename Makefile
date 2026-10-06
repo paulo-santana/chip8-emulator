@@ -6,7 +6,8 @@ OBJ_DIR ?= ./obj
 SOURCES := main.cpp \
 					 chip8.cpp \
 					 window.cpp \
-					 opcodes.cpp
+					 opcodes.cpp \
+					 font.cpp
 
 OBJECTS := $(addprefix $(OBJ_DIR)/, $(SOURCES:.cpp=.o))
 
@@ -35,6 +36,9 @@ mirror: $(NAME)
 
 fishie: $(NAME)
 	./$(NAME) "../roms/programs/Fishie [Hap, 2005].ch8"
+
+vers: $(NAME)
+	./$(NAME) "../roms/games/Vers [JMN, 1991].ch8"
 
 random: $(NAME)
 	./$(NAME) "../roms/programs/Random Number Test [Matthew Mikolay, 2010].ch8"

@@ -11,6 +11,7 @@
 
 namespace Offsets {
 static const std::uint16_t SYSTEM = 0x000;
+static const std::uint16_t FONT = SYSTEM; // + 0x50;
 static const std::uint16_t GAME_SPACE = 0x200;
 static const std::uint16_t INTERNAL = 0xEA0;
 static const std::uint16_t PC = INTERNAL;
@@ -58,6 +59,8 @@ public:
   void draw(uint8_t x, uint8_t y, uint8_t n);
 
   bool is_key_pressed(int key) const;
+
+  uint16_t get_character_address(uint8_t chr) const;
 
 private:
   Window window;

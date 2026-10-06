@@ -1,6 +1,7 @@
 #include "chip8.hpp"
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -221,6 +222,14 @@ void Chip8::execute_opcode(uint16_t opcode) {
     switch (opcode & 0x00FF) {
     case 0x001E:
       opcode_FX1E(*this, opcode);
+      break;
+    case 0x0029:
+      opcode_FX29(*this, opcode);
+      break;
+    default:
+      std::cerr << std::format("[warn]: unimplemented 0xFXNN opcode: 0x{:04X}",
+                               opcode)
+                << std::endl;
     }
     break;
   default:
@@ -377,6 +386,15 @@ void Chip8::draw(uint8_t x, uint8_t y, uint8_t n) {
 
 bool Chip8::is_key_pressed(int key) const {
   return this->window.is_key_pressed(static_cast<Chip8Key>(key));
+}
+
+uint16_t Chip8::get_character_address(uint8_t chr) const {
+  auto addr = Offsets::FONT + chr * 5;
+  std::cerr << std::format("[debug] returning character address for 0x{:02X} "
+                           "as 0x{:04X}",
+                           chr, addr)
+            << std::endl;
+  return addr;
 }
 
 void Chip8::print_display() const {

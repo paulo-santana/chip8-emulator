@@ -96,6 +96,16 @@ void opcode_FX1E(Chip8 &chip8, uint16_t opcode) {
   chip8.set_address_i(addr + value);
 }
 
+void opcode_FX29(Chip8 &chip8, uint16_t opcode) {
+  std::cerr << "[opcode] running opcode_FX29" << std::endl;
+  auto reg = (opcode & 0x0F00) >> 8;
+
+  auto value = chip8.get_register_value(reg); // & 0x0F;
+
+  auto char_addr = chip8.get_character_address(value);
+  chip8.set_address_i(char_addr);
+}
+
 // void opcode_FX33(Chip8 &chip8, uint16_t opcode) {
 //   uint8_t reg = opcode & 0x0F00 >> 8;
 //   uint8_t value = chip8.get_register_value(reg);
