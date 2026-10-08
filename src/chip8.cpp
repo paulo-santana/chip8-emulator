@@ -208,6 +208,9 @@ void Chip8::execute_opcode(uint16_t opcode) {
   case 0xA000:
     opcode_ANNN(*this, opcode);
     break;
+  case 0xC000:
+    opcode_CXNN(*this, opcode);
+    break;
   case 0xD000:
     opcode_DXYN(*this, opcode);
     break;

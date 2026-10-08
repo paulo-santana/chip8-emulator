@@ -1,6 +1,7 @@
 #include "chip8.hpp"
 #include <cstdint>
 #include <iostream>
+#include <random>
 
 void opcode_00E0(Chip8 &chip8, uint16_t opcode) {
   (void)opcode;
@@ -67,6 +68,15 @@ void opcode_7XNN(Chip8 &chip8, uint16_t opcode) {
 void opcode_ANNN(Chip8 &chip8, uint16_t opcode) {
   auto addr = opcode & 0x0FFF;
   chip8.set_address_i(addr);
+}
+
+void opcode_CXNN(Chip8 &chip8, uint16_t opcode) {
+  std::cerr << "[opcode] running opcode_CXNN" << std::endl;
+  auto reg = (opcode & 0x0F00) >> 8;
+
+  auto value = opcode & 0xFF;
+  std::random_device rd;
+  chip8.set_register_value(reg, rd() & value);
 }
 
 void opcode_DXYN(Chip8 &chip8, uint16_t opcode) {
